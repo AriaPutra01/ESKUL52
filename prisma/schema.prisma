@@ -1,0 +1,125 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  username      String?   @unique
+  email         String?   @unique
+  password      String?
+  emailVerified DateTime?
+  image         String?
+  role          String // 1: Admin, 2: Ketua, 3: Pembina
+  accounts      Account[]
+
+  PembinaEskul Eskul? @relation("PembinaEskul")
+  KetuaEskul   Eskul? @relation("KetuaEskul")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Pendaftar {
+  id            String @id @default(cuid())
+  nama_lengkap  String
+  jenis_kelamin String
+  kelas         String
+  jurusan       String
+  no_wa         String
+  alasan        String
+  status        String @default("pending") // 1: Pending, 2: Diterima, 3: Ditolak
+
+  id_eskul String
+  eskul    Eskul  @relation(fields: [id_eskul], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Eskul {
+  id         String  @id @default(cuid())
+  nama_eskul String
+  jadwal     String
+  status     String  @default("aktif") // 1: Tidak Aktif, 2: Aktif
+  logo       String?
+  foto       String?
+  deskripsi  String
+
+  id_pembina String @unique
+  pembina    User   @relation(name: "PembinaEskul", fields: [id_pembina], references: [id], onDelete: Cascade)
+  id_ketua   String @unique
+  ketua      User   @relation(name: "KetuaEskul", fields: [id_ketua], references: [id], onDelete: Cascade)
+
+  Pendaftar       Pendaftar[]
+  Anggota         Anggota[]
+  DaftarKehadiran DaftarKehadiran[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CatatanKehadiran {
+  id   String @id @default(cuid())
+  type String // 1: Hadir, 2: Alpha, 3: Terlambat, 4: Izin
+
+  id_anggota String // ID anggota yang diabsen
+  anggota    Anggota @relation(fields: [id_anggota], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model DaftarKehadiran {
+  id  String   @id @default(cuid())
+  doc DateTime
+
+  id_eskul String
+  eskul    Eskul  @relation(fields: [id_eskul], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Anggota {
+  id            String @id @default(cuid())
+  nama_lengkap  String
+  jenis_kelamin String
+  no_wa         String
+  kelas         String
+  jurusan       String
+
+  id_eskul String
+  eskul    Eskul  @relation(fields: [id_eskul], references: [id], onDelete: Cascade)
+
+  CatatanKehadiran CatatanKehadiran[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
