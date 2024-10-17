@@ -2,8 +2,7 @@ import NextAuth from "next-auth";
 import prisma from "@/lib/prisma";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import Credentials from "next-auth/providers/credentials";
-import { LoginSchema } from "./lib/zod";
-
+import { LoginValues } from "./lib/zod";
 export const { handlers, auth, signIn, signOut } = NextAuth({
 	adapter: PrismaAdapter(prisma),
 	session: { strategy: "jwt" },
@@ -16,7 +15,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 			},
 			async authorize(credentials) {
 				try {
-					const { email, password } = await LoginSchema.parseAsync(credentials);
+					const { email, password } = credentials as LoginValues;
 					const user = await prisma.user.findUnique({
 						where: { email },
 					});
@@ -40,21 +39,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 	callbacks: {
 		authorized({ auth, request: { nextUrl } }) {
 			const isLogin = !!auth?.user;
-			// const protectedRoutes = ["/Home"];
-			// if (!isLogin && protectedRoutes.includes(nextUrl.pathname)) {
-			// 	return Response.redirect(new URL("/Login", nextUrl));
-			// }
 			if (isLogin && nextUrl.pathname.startsWith("/Login")) {
 				return Response.redirect(new URL("/Home", nextUrl));
 			}
 			return true;
 		},
-
 		jwt({ token, user }) {
 			if (user) token.role = user.role;
 			return token;
 		},
-
 		session({ session, token }) {
 			session.user.id = token.sub;
 			session.user.role = token.role;

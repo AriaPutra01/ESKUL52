@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/rules-of-hooks */
 "use client";
 
 import React from "react";
@@ -18,11 +17,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
-import { Create } from "@/lib/actions";
-import { ButtonBack } from "../../../../../components/Buttons";
+import { ButtonBack } from "@/components/Buttons";
 import { useToast } from "@/hooks/use-toast";
+import { Create } from "@/lib/actions";
 import { useRouter } from "next/navigation";
-import { useFormStatus } from "react-dom";
 
 type Props = {
 	data: tEskul;
@@ -30,9 +28,8 @@ type Props = {
 
 export default function FormDaftar({ data }: Props) {
 	const { id, nama_eskul } = data;
-	const { pending } = useFormStatus();
-	const router = useRouter();
 	const { toast } = useToast();
+	const router = useRouter();
 
 	const form = useForm<PendaftarValues>({
 		resolver: zodResolver(PendaftarSchema),
@@ -41,24 +38,16 @@ export default function FormDaftar({ data }: Props) {
 		},
 	});
 
-	const onSubmit = (values: PendaftarValues) => {
-		try {
-			Create("/pendaftar", values)
-				.then(() => {
-					toast({
-						title: "Data anda berhasil dikirim.",
-						description: "mohon untuk menunggu konfirmasi lebih lanjut :)",
-					});
-				})
-				.then(() => {
-					router.push("/Home");
-				})
-				.catch((error) => {
-					throw error;
-				});
-		} catch (error) {
-			console.error(error);
-		}
+	const pending = form.formState.isSubmitting;
+
+	const onSubmit = async (values: PendaftarValues) => {
+		await Create("/pendaftar", values, ["pendaftar"]).then(() => {
+			toast({
+				title: "Data anda berhasil dikirim.",
+				description: "mohon untuk menunggu konfirmasi lebih lanjut :)",
+			});
+			router.push("/Home");
+		});
 	};
 
 	return (

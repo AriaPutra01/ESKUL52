@@ -1,10 +1,11 @@
 import { ButtonBack } from "@/components/Buttons";
 import { Button } from "@/components/ui/button";
 import { tEskul } from "@/lib/types";
-import { Read } from "@/lib/actions";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
+import { auth } from "@/auth";
+import { GetEskulId } from "@/lib/data";
 
 type Props = {
 	params: {
@@ -14,7 +15,8 @@ type Props = {
 
 export default async function page({ params }: Props) {
 	const { id } = params;
-	const eskul: tEskul = await Read(`/eskul/${id}`);
+	const eskul: tEskul = await GetEskulId(id);
+	const session = await auth();
 	return (
 		<div className="w-full p-[2rem]">
 			<div className="flex flex-col gap-[2rem] bg-gray-50 p-[2rem] rounded-md shadow-md">
@@ -59,9 +61,11 @@ export default async function page({ params }: Props) {
 					</div>
 				</div>
 				<div className="flex gap-[1rem] self-end">
-					<Button asChild>
-						<Link href={`/Home/Eskul/${id}/Daftar`}>Daftar</Link>
-					</Button>
+					{!session && (
+						<Button asChild>
+							<Link href={`/Eskul/${id}/Daftar`}>Daftar</Link>
+						</Button>
+					)}
 					<ButtonBack />
 				</div>
 			</div>

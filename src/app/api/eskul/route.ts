@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { Prisma } from "@prisma/client";
+import { put } from "@vercel/blob";
 
 export async function GET() {
 	try {
@@ -23,35 +23,41 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
 	try {
-		const body = await request.json();
+		const formData = await request.formData();
 
-		if (!body) {
+		if (!formData) {
 			return NextResponse.json({ error: "Data is Requires" }, { status: 400 });
 		}
 
-		const newEskul = await prisma.eskul.create({
+		const logo = formData.get("logo") as File;
+		const urlLogo = await put(logo.name, logo, {
+			access: "public",
+			multipart: true,
+			token: process.env.BLOB_READ_WRITE_TOKEN,
+		});
+
+		const foto = formData.get("foto") as File;
+		const urlFoto = await put(foto.name, foto, {
+			access: "public",
+			multipart: true,
+			token: process.env.BLOB_READ_WRITE_TOKEN,
+		});
+
+		const newData = await prisma.eskul.create({
 			data: {
-				nama_eskul: body.nama_eskul,
-				jadwal: body.jadwal,
-				status: body.status,
-				logo: body.logo,
-				foto: body.foto,
-				deskripsi: body.deskripsi,
-				id_pembina: body.id_pembina,
-				id_ketua: body.id_ketua,
+				nama_eskul: formData.get("nama_eskul") as string,
+				jadwal: formData.get("jadwal") as string,
+				status: formData.get("status") as string,
+				logo: urlLogo.url,
+				foto: urlFoto.url,
+				deskripsi: formData.get("deskripsi") as string,
+				id_pembina: formData.get("id_pembina") as string,
+				id_ketua: formData.get("id_ketua") as string,
 			},
 		});
 
-		return NextResponse.json(newEskul, { status: 201 });
+		return NextResponse.json(newData, { status: 201 });
 	} catch (error) {
-		if (error instanceof Prisma.PrismaClientKnownRequestError) {
-			if (error.code === "P2002") {
-				return NextResponse.json(
-					{ error: "pembina atau ketua sudah memegang eskul lain" },
-					{ status: 409 }
-				);
-			}
-		}
 		console.error("POST /api/eskul error:", error);
 		return NextResponse.json(
 			{ error: "Internal Server Error" },

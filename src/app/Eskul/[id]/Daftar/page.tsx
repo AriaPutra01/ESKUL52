@@ -1,6 +1,8 @@
-import FormDaftar from "@/app/Home/Eskul/[id]/Daftar/FormDaftar";
-import { Read } from "@/lib/actions";
+import FormDaftar from "@/app/Eskul/[id]/Daftar/FormDaftar";
+import { auth } from "@/auth";
+import { GetEskulId } from "@/lib/data";
 import { tEskul } from "@/lib/types";
+import { notFound } from "next/navigation";
 import React from "react";
 
 type Props = {
@@ -10,8 +12,12 @@ type Props = {
 };
 
 export default async function page({ params }: Props) {
+	const session = await auth();
+	if (session) {
+		notFound();
+	}
 	const { id } = params;
-	const eskul: tEskul = await Read(`/eskul/${id}`);
+	const eskul: tEskul = await GetEskulId(id);
 	return (
 		<main className="flex justify-center py-[2rem]">
 			<div className="p-[1rem] bg-gray-100 w-full sm:w-[50vw] rounded-md">

@@ -1,5 +1,6 @@
 // pengguna
 export type tUser = {
+	filter(arg0: (item: tUser) => boolean): unknown;
 	id: string;
 	name?: string;
 	username?: string;
@@ -7,20 +8,22 @@ export type tUser = {
 	password?: string;
 	emailVerified?: number;
 	image?: string;
-	role: number;
+	role: string;
+	PembinaEskul: tEskul;
+	KetuaEskul: tEskul;
 };
 
 // Eskul
 export type tEskul = {
 	id: string;
-	logo: string;
 	nama_eskul: string;
 	jadwal: string;
 	deskripsi: string;
-	foto: string;
-	status: number;
-	id_pembina: number;
-	id_ketua: number;
+	logo: any;
+	foto: any;
+	status: string;
+	id_pembina: string;
+	id_ketua: string;
 	pembina: tUser;
 	ketua: tUser;
 };
@@ -28,12 +31,12 @@ export type tEskul = {
 // Pendaftar
 export type tPendaftar = {
 	id: string;
-	id_eskul: number;
+	id_eskul: string;
 	nama_lengkap: string;
 	jenis_kelamin: string;
 	kelas: string;
 	jurusan: string;
 	no_wa: string;
 	alasan: string;
-	status: number;
+	status: string;
 };

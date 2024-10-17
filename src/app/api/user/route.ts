@@ -6,6 +6,10 @@ export async function GET() {
 	try {
 		const data = await prisma.user.findMany({
 			orderBy: { createdAt: "desc" },
+			include: {
+				PembinaEskul: true,
+				KetuaEskul: true,
+			},
 		});
 		return NextResponse.json(data);
 	} catch (error) {

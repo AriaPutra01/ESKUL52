@@ -4,52 +4,54 @@
 import { signIn, signOut } from "@/auth";
 import { AuthError } from "next-auth";
 import { LoginValues } from "./zod";
+import { revalidateMultipleTags } from "./revalidation";
+import { revalidateTags } from "./data";
 
 const API_URL = "http://localhost:3000/api";
 
-export async function Read(url: string) {
-	return await fetch(API_URL + url, {
-		cache: "no-store",
-		method: "GET",
-		headers: {
-			"Content-Type": "application/json",
-		},
-	}).then((res) => res.json());
+export async function Create(
+	url: string,
+	data: any,
+	revalidate: revalidateTags[]
+) {
+	const response = await fetch(API_URL + url, {
+		method: "POST",
+		body: data instanceof FormData ? data : JSON.stringify(data),
+	});
+	if (revalidate) {
+		await revalidateMultipleTags(revalidate);
+	}
+	return response.json();
 }
 
-export async function Create(url: string, data: any) {
-	try {
-		const body = await fetch(API_URL + url, {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify(data),
-		});
-		return body.json();
-	} catch (error) {
-		console.error(error);
+export async function Update(
+	url: string,
+	data: any,
+	revalidate: revalidateTags[]
+) {
+	const response = await fetch(API_URL + url, {
+		method: "PUT",
+		body: data instanceof FormData ? data : JSON.stringify(data),
+	});
+	if (revalidate) {
+		await revalidateMultipleTags(revalidate);
+	}
+	return response.json();
+}
+
+export async function Delete(url: string, revalidate: revalidateTags[]) {
+	const req = await fetch(API_URL + url, {
+		method: "DELETE",
+	});
+	if (!req) {
+		return { error: "Internal Server Error" };
+	}
+	if (revalidate) {
+		await revalidateMultipleTags(revalidate);
 	}
 }
 
-export async function Update(url: string, data: any) {
-	return await fetch(API_URL + url, {
-		method: "PUT",
-		headers: {
-			"Content-Type": "application/json",
-		},
-		body: JSON.stringify(data),
-	}).then((res) => res.json());
-}
-
-export async function Delete(url: string) {
-	return await fetch(API_URL + url, {
-		method: "DELETE",
-		headers: {
-			"Content-Type": "application/json",
-		},
-	}).then((res) => res.json());
-}
+// AUTH
 
 export async function login(values: LoginValues) {
 	const { email, password } = values;

@@ -14,18 +14,19 @@ import {
 	NavigationMenuTrigger,
 	navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
-import AlertMessage from "./AlertMessage";
 import { logout } from "@/lib/actions";
+import SweetConfirm from "./SweetAlert";
+import { Button } from "./ui/button";
 
 const DataEskul: { title: string; href: string; description: string }[] = [
 	{
 		title: "Tambah Eskul",
-		href: "/Home/Eskul/Tambah",
+		href: "/Eskul/Tambah",
 		description: "Halaman untuk membuat data Eskul.",
 	},
 	{
 		title: "List Eskul",
-		href: "/Home/Eskul",
+		href: "/Eskul",
 		description: "Halaman pengelolaan data Eskul.",
 	},
 ];
@@ -33,12 +34,12 @@ const DataEskul: { title: string; href: string; description: string }[] = [
 const DataUser: { title: string; href: string; description: string }[] = [
 	{
 		title: "Tambah Pengguna",
-		href: "/Home/User/Tambah",
+		href: "/User/Tambah",
 		description: "Halaman untuk membuat data Pengguna.",
 	},
 	{
 		title: "List Pengguna",
-		href: "/Home/User",
+		href: "/User",
 		description: "Halaman pengelolaan data Pengguna.",
 	},
 ];
@@ -50,7 +51,7 @@ export function NavigationBar({ session }: { session: any }) {
 				{!session && (
 					<>
 						<NavigationMenuItem>
-							<Link href="/" legacyBehavior passHref>
+							<Link href="/Home" legacyBehavior passHref>
 								<NavigationMenuLink className={navigationMenuTriggerStyle()}>
 									Home
 								</NavigationMenuLink>
@@ -72,8 +73,15 @@ export function NavigationBar({ session }: { session: any }) {
 						</NavigationMenuItem>
 					</>
 				)}
-				{session && session.user.role === "admin" && (
+				{session?.user.role === "admin" && (
 					<>
+						<NavigationMenuItem>
+							<Link href="/Home" legacyBehavior passHref>
+								<NavigationMenuLink className={navigationMenuTriggerStyle()}>
+									Home
+								</NavigationMenuLink>
+							</Link>
+						</NavigationMenuItem>
 						<NavigationMenuItem>
 							<NavigationMenuTrigger>Data Eskul</NavigationMenuTrigger>
 							<NavigationMenuContent>
@@ -110,14 +118,27 @@ export function NavigationBar({ session }: { session: any }) {
 							</NavigationMenuTrigger>
 							<NavigationMenuContent>
 								<ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
-									<ListItem title="Profile" href="/Home/User/Detail">
-										Halaman profile pengguna.
+									<ListItem title="Profile" href="/User/Detail">
+										<Button
+											className="p-0 m-0 hover:bg-inherit"
+											type="button"
+											variant="ghost">
+											Halaman profile pengguna.
+										</Button>
 									</ListItem>
-									<AlertMessage
-										action={() => logout()}
-										message="Anda akan melakukan logout!">
-										<ListNoLink title="Logout">Aksi untuk Logout</ListNoLink>
-									</AlertMessage>
+									<ListNoLink title="Logout">
+										<form
+											action={() =>
+												SweetConfirm("question", "Logout", () => logout())
+											}>
+											<Button
+												className="p-0 m-0 hover:bg-inherit"
+												type="submit"
+												variant="ghost">
+												Aksi untuk Logout
+											</Button>
+										</form>
+									</ListNoLink>
 								</ul>
 							</NavigationMenuContent>
 						</NavigationMenuItem>
